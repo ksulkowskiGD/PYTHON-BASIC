@@ -2,10 +2,12 @@
 Create 3 classes with interconnection between them (Student, Teacher,
 Homework)
 Use datetime module for working with date/time
-1. Homework takes 2 attributes for __init__: tasks text and number of days to complete
+1. Homework takes 2 attributes for __init__:
+tasks text and number of days to complete
 Attributes:
     text - task text
-    deadline - datetime.timedelta object with date until task should be completed
+    deadline - datetime.timedelta object with
+    date until task should be completed
     created - datetime.datetime object when the task was created
 Methods:
     is_active - check if task already closed
@@ -21,23 +23,46 @@ Attributes:
      last_name
      first_name
 Methods:
-    create_homework - request task text and number of days to complete, returns Homework object
+    create_homework - request task text and number of days to complete,
+    returns Homework object
     Note that this method doesn't need object itself
 PEP8 comply strictly.
 """
 import datetime
 
 
+class Homework:
+    def __init__(self, tasks_text: str, days_to_complete: int) -> None:
+        self.text: str = tasks_text
+        self.deadline: datetime.timedelta = datetime.timedelta(
+            days=days_to_complete
+        )
+        self.created: datetime.datetime = datetime.datetime.now()
+
+    def is_active(self) -> bool:
+        return datetime.datetime.now() <= self.created + self.deadline
+
+
 class Teacher:
-    ...
+    def __init__(self, last_name: str, first_name: str) -> None:
+        self.last_name: str = last_name
+        self.first_name: str = first_name
+
+    def create_homework(
+        self,
+        tasks_text: str,
+        days_to_complete: int
+    ) -> Homework:
+        return Homework(tasks_text, days_to_complete)
 
 
 class Student:
-    ...
+    def __init__(self, last_name: str, first_name: str) -> None:
+        self.last_name: str = last_name
+        self.first_name: str = first_name
 
-
-class Homework:
-    ...
+    def do_homework(self, homework: Homework) -> Homework:
+        return homework if homework.is_active() else print('You are late')
 
 
 if __name__ == '__main__':
