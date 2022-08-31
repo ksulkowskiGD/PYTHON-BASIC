@@ -1,6 +1,8 @@
 """
-Write function which receives filename and reads file line by line and returns min and mix integer from file.
-Restriction: filename always valid, each line of file contains valid integer value
+Write function which receives filename and reads file line by line
+and returns min and mix integer from file.
+Restriction: filename always valid, each line of file contains valid
+integer value.
 Examples:
     # file contains following lines:
         10
@@ -16,9 +18,12 @@ with open(filename) as opened_file:
     for line in opened_file:
         ...
 """
-from typing import Tuple
+from typing import Tuple, List
 
 
 def get_min_max(filename: str) -> Tuple[int, int]:
-    ...
-
+    numbers: List[int] = []
+    with open(filename) as fh:
+        for line in fh:
+            numbers.append(int(line.strip()))
+    return min(numbers), max(numbers)
