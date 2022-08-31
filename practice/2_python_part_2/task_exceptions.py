@@ -27,7 +27,7 @@ def division(x: int, y: int) -> typing.Union[None, int]:
     try:
         if y == 1:
             raise DivisionByOneException('Deletion on 1 get the same result')
-        return x // y
+        return x / y
     except ZeroDivisionError:
         print("Division by 0")
     except DivisionByOneException as e:
