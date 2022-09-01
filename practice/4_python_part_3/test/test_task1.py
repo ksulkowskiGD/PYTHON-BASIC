@@ -2,7 +2,7 @@ from task_1 import calculate_days
 from task_1 import InvalidDateException, WrongFormatException
 from pytest import mark, raises
 
-### today's date for testing purposes: 2022-09-01
+# today's date for testing purposes: 2022-09-01
 
 normal_dates_inputs = [
     ('2022-08-31', 1),
@@ -35,7 +35,6 @@ wrong_format_inputs = [
 @mark.parametrize('input_date, days', normal_dates_inputs)
 def test_calculate_days(input_date, days):
     assert calculate_days(input_date) == days
-
 
 
 @mark.task1

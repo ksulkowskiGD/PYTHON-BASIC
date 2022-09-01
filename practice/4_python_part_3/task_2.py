@@ -12,8 +12,18 @@ Examples:
 import math
 
 
+class OperationNotFoundException(Exception):
+    def __init__(self):
+        self.msg: str = 'Operation not found in math module'
+        super().__init__(self.msg)
+
+
 def math_calculate(function: str, *args):
-    ...
+    try:
+        math_func = getattr(math, function)
+    except (AttributeError):
+        raise OperationNotFoundException
+    return math_func(*args)
 
 
 """
