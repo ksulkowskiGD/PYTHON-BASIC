@@ -14,6 +14,9 @@ TIP: for testing builtin input() function create another function which return i
 from unittest.mock import patch
 
 
+# Done in 2_python_part_2 dir
+
+
 def test_read_numbers_without_text_input():
     ...
 
