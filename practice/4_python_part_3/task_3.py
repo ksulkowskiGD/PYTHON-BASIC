@@ -1,5 +1,6 @@
 """
-Write a function which detects if entered string is http/https domain name with optional slash at the and
+Write a function which detects if entered string is
+http/https domain name with optional slash at the and
 Restriction: use re module
 Note that address may have several domain levels
     >>>is_http_domain('http://wikipedia.org')
@@ -13,7 +14,10 @@ import re
 
 
 def is_http_domain(domain: str) -> bool:
-    ...
+    return bool(re.fullmatch(
+        r'^https?:\/\/(www\.)?(?!(www)\.)([a-z0-9]+\.)+[a-z]{2,}\/?$',
+        domain
+    ))
 
 
 """
