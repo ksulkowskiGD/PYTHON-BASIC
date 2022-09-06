@@ -1,7 +1,10 @@
 """
-Create virtual environment and install Faker package only for this venv.
-Write command line tool which will receive int as a first argument and one or more named arguments
- and generates defined number of dicts separated by new line.
+Create virtual environment and install Faker
+package only for this venv.
+Write command line tool which will receive
+int as a first argument and one or more named arguments
+and generates defined number of dicts
+separated by new line.
 Exec format:
 `$python task_4.py NUMBER --FIELD=PROVIDER [--FIELD=PROVIDER...]`
 where:
@@ -15,11 +18,68 @@ Example:
 """
 
 import argparse
+import faker
+
+
+class InvalidNumberOfDictsError(Exception):
+    def __init__(self):
+        self.msg = 'Number of dicts must be >0'
+        super().__init__(self.msg)
 
 
 def print_name_address(args: argparse.Namespace) -> None:
-    ...
+    n_dicts: int = args.number_of_dicts[0]
+    if n_dicts < 1:
+        raise InvalidNumberOfDictsError
+    fields: list(str) = args.dictionaries_fields
+    fake: fake.Faker = faker.Faker()
+    result_dicts: list = []
+    for _ in range(n_dicts):
+        result_dicts.append({})
+    for field in fields:
+        try:
+            key, provider = field.split('=')
+            method = getattr(fake, provider)
+            for result_dict in result_dicts:
+                result_dict[key] = method()
+        except ValueError:
+            print('Error\nDictionaries fields usage: FIELD=PROVIDER')
+            return
+        except AttributeError:
+            print('Error\nInvalid faker provider')
+            return
+    for result_dict in result_dicts:
+        print(result_dict)
 
+
+def parse_arguments() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        'Create given number of  dictionaries with given keys ' +
+        'and auto-generated values'
+    )
+    parser.add_argument(
+        'number_of_dicts',
+        type=int,
+        nargs=1,
+        help='Number of dictionaries to generate.'
+        )
+    parser.add_argument(
+        'dictionaries_fields',
+        type=str,
+        nargs='+',
+        help='Fields of dictionaries: [FIELD=PROVIDER]\n'
+    )
+    args = parser.parse_args()
+    return args
+
+
+def main():
+    args = parse_arguments()
+    print_name_address(args)
+
+
+if __name__ == '__main__':
+    main()
 
 """
 Write test for print_name_address function
