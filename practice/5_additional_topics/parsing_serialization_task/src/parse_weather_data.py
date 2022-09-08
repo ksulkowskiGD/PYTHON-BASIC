@@ -1,6 +1,7 @@
 import json
 import os
 import statistics as stats
+from typing import Union
 
 
 def parse_json_data(source_data_dir: str) -> dict[str, list[dict[str, float]]]:
@@ -23,7 +24,10 @@ def parse_json_data(source_data_dir: str) -> dict[str, list[dict[str, float]]]:
     return cities_weather_data
 
 
-def calculate_weather_stats(weather_data: dict[str, list[dict[str, float]]]) -> dict[str, dict[str, float]]:
+def calculate_cities_weather_stats(
+    weather_data: dict[str, list[dict[str, float]]]
+) -> dict[str, dict[str, float]]:
+
     weather_stats = {}
     for city, raw_city_data in weather_data.items():
         city_stats = {}
@@ -41,10 +45,51 @@ def calculate_weather_stats(weather_data: dict[str, list[dict[str, float]]]) -> 
     return weather_stats
 
 
+def calculate_country_weather_stats(
+    cities_weather_stats: dict[str, dict[str, float]]
+) -> dict[str, Union[float, tuple[str, float]]]:
+
+    country_weather_stats = {}
+    parsed_cities_temps = [
+        (city, x['mean_temp']) for city, x in cities_weather_stats.items()
+    ]
+    parsed_cities_wind_speeds = [(
+            city,
+            x['mean_wind_speed']
+        ) for city, x in cities_weather_stats.items()
+    ]
+    country_weather_stats['mean_temp'] = stats.mean(
+        [x[1] for x in parsed_cities_temps]
+    )
+    country_weather_stats['mean_wind_speed'] = stats.mean(
+        [x[1] for x in parsed_cities_wind_speeds]
+    )
+    country_weather_stats['coldest_city'] = min(
+        parsed_cities_temps,
+        key=lambda x: x[1]
+    )
+    country_weather_stats['warmest_city'] = max(
+        parsed_cities_temps,
+        key=lambda x: x[1]
+    )
+    country_weather_stats['least_windy_city'] = min(
+        parsed_cities_wind_speeds,
+        key=lambda x: x[1]
+    )
+    country_weather_stats['most_windy_city'] = max(
+        parsed_cities_wind_speeds,
+        key=lambda x: x[1]
+    )
+    return country_weather_stats
+
+
 def main():
     weather_data = parse_json_data('./source_data')
-    weather_stats = calculate_weather_stats(weather_data)
-    print(weather_stats)
+    cities_weather_stats = calculate_cities_weather_stats(weather_data)
+    country_weather_stats = calculate_country_weather_stats(
+        cities_weather_stats
+    )
+    print(country_weather_stats)
 
 
 if __name__ == '__main__':
