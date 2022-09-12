@@ -35,19 +35,20 @@ def calculate_cities_weather_stats(
         parsed_city_wind_speed = [
             hour_entry['wind_speed'] for hour_entry in raw_city_data
         ]
-        city_stats['mean_temp'] = stats.mean(parsed_city_temp)
-        city_stats['max_temp'] = max(parsed_city_temp)
-        city_stats['min_temp'] = min(parsed_city_temp)
-        city_stats['mean_wind_speed'] = stats.mean(parsed_city_wind_speed)
-        city_stats['max_wind_speed'] = max(parsed_city_wind_speed)
-        city_stats['min_wind_speed'] = min(parsed_city_wind_speed)
+        city_stats['mean_temp'] = round(stats.mean(parsed_city_temp), 2)
+        city_stats['max_temp'] = round(max(parsed_city_temp), 2)
+        city_stats['min_temp'] = round(min(parsed_city_temp), 2)
+        city_stats['mean_wind_speed'] = round(
+            stats.mean(parsed_city_wind_speed), 2)
+        city_stats['max_wind_speed'] = round(max(parsed_city_wind_speed), 2)
+        city_stats['min_wind_speed'] = round(min(parsed_city_wind_speed), 2)
         weather_stats[city] = city_stats
     return weather_stats
 
 
 def calculate_country_weather_stats(
     cities_weather_stats: dict[str, dict[str, float]]
-) -> dict[str, Union[float, tuple[str, float]]]:
+) -> dict[str, Union[float, str]]:
 
     country_weather_stats = {}
     parsed_cities_temps = [
@@ -58,38 +59,46 @@ def calculate_country_weather_stats(
             x['mean_wind_speed']
         ) for city, x in cities_weather_stats.items()
     ]
-    country_weather_stats['mean_temp'] = stats.mean(
+    country_weather_stats['mean_temp'] = round(stats.mean(
         [x[1] for x in parsed_cities_temps]
-    )
-    country_weather_stats['mean_wind_speed'] = stats.mean(
+    ), 2)
+    country_weather_stats['mean_wind_speed'] = round(stats.mean(
         [x[1] for x in parsed_cities_wind_speeds]
-    )
-    country_weather_stats['coldest_city'] = min(
+    ), 2)
+    country_weather_stats['coldest_place'] = min(
         parsed_cities_temps,
         key=lambda x: x[1]
-    )
-    country_weather_stats['warmest_city'] = max(
+    )[0]
+    country_weather_stats['warmest_place'] = max(
         parsed_cities_temps,
         key=lambda x: x[1]
-    )
-    country_weather_stats['least_windy_city'] = min(
+    )[0]
+    # country_weather_stats['least_windy_city'] = min(
+    #     parsed_cities_wind_speeds,
+    #     key=lambda x: x[1]
+    # )
+    country_weather_stats['windiest_place'] = max(
         parsed_cities_wind_speeds,
         key=lambda x: x[1]
-    )
-    country_weather_stats['most_windy_city'] = max(
-        parsed_cities_wind_speeds,
-        key=lambda x: x[1]
-    )
+    )[0]
     return country_weather_stats
 
 
-def main():
-    weather_data = parse_json_data('./source_data')
+def parse_weather_data(
+    source_data_path: str
+    ) -> tuple[
+        dict[str, dict[str, float]],
+        dict[str, Union[float, str]]
+        ]:
+    weather_data = parse_json_data(source_data_path)
     cities_weather_stats = calculate_cities_weather_stats(weather_data)
-    country_weather_stats = calculate_country_weather_stats(
+    return cities_weather_stats, calculate_country_weather_stats(
         cities_weather_stats
     )
-    print(country_weather_stats)
+
+
+def main():
+    print(parse_weather_data('./source_data')[0])
 
 
 if __name__ == '__main__':
