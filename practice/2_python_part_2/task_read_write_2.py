@@ -25,15 +25,7 @@ def generate_words(n=20):
 
 
 def write_words(path_to_files: str, words: list[str]) -> None:
-    with open(f'{path_to_files}file1.txt', 'w', encoding='utf8') as fh:
+    with open(f'{path_to_files}/file1.txt', 'w', encoding='utf8') as fh:
         fh.write('\n'.join(words))
-    with open(f'{path_to_files}file2.txt', 'w', encoding='CP1252') as fh:
+    with open(f'{path_to_files}/file2.txt', 'w', encoding='CP1252') as fh:
         fh.write(','.join(words[-1::-1]))
-
-
-def main():
-    write_words('practice/2_python_part_2/files/', generate_words(5))
-
-
-if __name__ == '__main__':
-    main()

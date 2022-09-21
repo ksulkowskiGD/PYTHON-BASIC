@@ -7,6 +7,7 @@ If other cases it should check if division is correct
 TIP: to test output of print() function use capfd fixture
 https://stackoverflow.com/a/20507769
 """
+# Done in 2_python_part_2 dir
 
 
 def test_division_ok(capfd):
