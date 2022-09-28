@@ -249,3 +249,46 @@ COUNTRIES = [
   "Zambia",
   "Zimbabwe"
 ]
+
+test_stocks = [
+        {
+            'name': 'Apple Inc.',
+            'code': 'AAPL',
+            'country': 'United States',
+            'employees': '154,000',
+            'ceo': 'Mr. Timothy D. Cook',
+            'ceo_year_born': '1961'
+        },
+        {
+            'name': 'Tesla, Inc.',
+            'code': 'TSLA',
+            'country': 'United States',
+            'employees': '99,290',
+            'ceo': 'Mr. Elon R. Musk',
+            'ceo_year_born': '1972'
+        },
+        {
+            'name': 'Ford Motor Company',
+            'code': 'F',
+            'country': 'United States',
+            'employees': '183,000',
+            'ceo': 'Mr. William Clay Ford Jr,',
+            'ceo_year_born': '1962'
+        },
+        {
+            'name': 'NVIDIA Corporation',
+            'code': 'NVDA',
+            'country': 'United States',
+            'employees': '22,473',
+            'ceo': 'Mr. Jen-Hsun Huang',
+            'ceo_year_born': '1963'
+        },
+        {
+            'name': 'Advanced Micro Devices, Inc.',
+            'code': 'AMD',
+            'country': 'United States',
+            'employees': '15,500',
+            'ceo': 'Dr. Lisa T. Su Ph.D.',
+            'ceo_year_born': '1970'
+        },
+    ]

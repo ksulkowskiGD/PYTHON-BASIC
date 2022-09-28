@@ -1,0 +1,8 @@
+====================================== 5 stocks with most youngest CEOs ======================================
+| Name                       | Code | Country       | Employees | CEO Name                   | CEO Year Born |
+--------------------------------------------------------------------------------------------------------------
+| Snap Inc.                  | SNAP | United States | 6,446     | Mr. Evan T. Spiegel        | 1991          |
+| Meta Platforms, Inc.       | META | United States | 83,553    | Mr. Mark Elliot Zuckerberg | 1984          |
+| Lyft, Inc.                 | LYFT | United States | 5,000     | Mr. Logan D. Green         | 1984          |
+| Opendoor Technologies Inc. | OPEN | United States | 2,816     | Mr. Eric Chung Wei Wu      | 1983          |
+| Grab Holdings Limited      | GRAB | Singapore     | 9,493     | Mr. Ping Yeow  Tan         | 1982          |

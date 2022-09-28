@@ -5,9 +5,9 @@ To fetch data from webpage you can use requests lib. To parse html you can use b
 Sheets which are needed:
 1. 5 stocks with most youngest CEOs and print sheet to output. You can find CEO info in Profile tab of concrete stock.
     Sheet's fields: Name, Code, Country, Employees, CEO Name, CEO Year Born.
-2. 10 stocks with best 52-Week Change. 52-Week Change placed on Statistics tab.
+TODO: 2. 10 stocks with best 52-Week Change. 52-Week Change placed on Statistics tab.
     Sheet's fields: Name, Code, 52-Week Change, Total Cash
-3. 10 largest holds of Blackrock Inc. You can find related info on the Holders tab.
+TODO: 3. 10 largest holds of Blackrock Inc. You can find related info on the Holders tab.
     Blackrock Inc is an investment management corporation.
     Sheet's fields: Name, Code, Shares, Date Reported, % Out, Value.
     All fields except first two should be taken from Holders tab.
@@ -36,8 +36,7 @@ Links:
 from typing import Union
 import requests
 from bs4 import BeautifulSoup, element
-import mechanicalsoup
-from countries import COUNTRIES
+from useful_data import COUNTRIES
 
 URL = 'https://finance.yahoo.com'
 
@@ -84,6 +83,7 @@ def parse_soup_for_stocks_list(
         ) -> list[dict[str, Union[str, element.Tag]]]:
     if not all_stocks_are_listed_on_page(soup):
         print('Not all stocks are shown!!! :(')
+    # TODO: FIX PARSING ALL STOCKS
     else:
         print('Done! :D')
     stocks_rows: element.ResultSet = soup.find_all(
@@ -151,12 +151,12 @@ def parse_for_stocks_profiles(
                 stock_details_right_col.find_all(
                     'span',
                     class_='Fw(600)'
-                )[-1].text.strip()
+                )[-1].text.strip()  # TODO: FIX + ERROR IF NOT GIVEN
             )
             for executive in stock_executives_table.find_all(
                 'tr',
                 class_='C($primaryColor) BdB Bdc($seperatorColor) H(36px)'
-            ):
+            ):  # TODO: IF NO CEO - PICK FIRST ONE
                 if 'ceo' in executive.find(
                     'td',
                     class_='Ta(start) W(45%)'
@@ -165,13 +165,59 @@ def parse_for_stocks_profiles(
                         'td',
                         'Ta(start)'
                     ).text.strip()
-                    stock['ceo_year_born'] = executive.find_all(
-                        'td',
-                        'Ta(end)'
-                    )[-1].text.strip()
+                    try:
+                        stock['ceo_year_born'] = int(executive.find_all(
+                            'td',
+                            'Ta(end)'
+                        )[-1].text.strip())
+                    except ValueError:
+                        stock['ceo_year_born'] = 'error'
+                    # TODO: FIX PLACEHOLDER
                     break
         except AttributeError:
             continue
+    for stock in stocks:  # TODO: MOVE IT TO SORTING
+        if 'error' in stocks.values():
+            stocks.remove(stock)
+
+
+def find_youngest_ceos(
+    stocks: list[dict[str, Union[str, element.Tag]]]
+        ) -> list[dict[str, Union[str, element.Tag]]]:
+    stocks.sort(key=lambda x: x['ceo_year_born'], reverse=True)
+    return stocks[:5]
+
+
+def save_youngest_ceos(stocks: list[dict[str, Union[str, element.Tag]]]):
+    table_width: int = 19
+    cols_width: dict[str, int] = {}
+    for value, column_title in [
+        ('code', 4),
+        ('name', 4),
+        ('country', 7),
+        ('employees', 9),
+        ('ceo', 8),
+        ('ceo_year_born', 13)
+    ]:
+        cols_width[value] = max([
+            len(str(stock[value])) for stock in stocks
+        ] + [column_title])
+        table_width += cols_width[value]
+    table_title: str = ' 5 stocks with most youngest CEOs '
+    with open('./results/youngest_ceos.txt', 'w') as fh:
+        fh.write(f'{table_title:=^{table_width}}\n')
+        fh.write(f'| {"Name":<{cols_width["name"]}} | \
+{"Code":<{cols_width["code"]}} | {"Country":<{cols_width["country"]}} | \
+{"Employees":<{cols_width["employees"]}} | {"CEO Name":<{cols_width["ceo"]}} \
+| {"CEO Year Born":<{cols_width["ceo_year_born"]}} |\n')
+        fh.write('-'*table_width + '\n')
+        for stock in stocks:
+            fh.write(f'| {stock["name"]:<{cols_width["name"]}} | \
+{stock["code"]:<{cols_width["code"]}} | \
+{stock["country"]:<{cols_width["country"]}} | \
+{stock["employees"]:<{cols_width["employees"]}} | \
+{stock["ceo"]:<{cols_width["ceo"]}} | \
+{stock["ceo_year_born"]:<{cols_width["ceo_year_born"]}} |\n')
 
 
 def main():
@@ -179,9 +225,13 @@ def main():
         URL+MOST_ACTIVE_100_RESULTS,
         HEADERS
     )
-    stocks: element.ResultSet = parse_soup_for_stocks_list(soup)
+    stocks: list[dict[str, Union[
+        str,
+        element.Tag
+        ]]] = parse_soup_for_stocks_list(soup)
     parse_for_stocks_profiles(stocks)
-
+    youngest_ceos_stocks = find_youngest_ceos(stocks)
+    save_youngest_ceos(youngest_ceos_stocks)
 
 
 if __name__ == '__main__':
