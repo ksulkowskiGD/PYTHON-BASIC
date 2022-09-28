@@ -33,11 +33,15 @@ Links:
 """
 
 
+from typing import Union
 import requests
 from bs4 import BeautifulSoup, element
 import mechanicalsoup
+from countries import COUNTRIES
 
-URL = 'https://finance.yahoo.com/most-active?offset=0&count=100'
+URL = 'https://finance.yahoo.com'
+
+MOST_ACTIVE_100_RESULTS = '/most-active?offset=0&count=100'
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 12_6)\
@@ -45,10 +49,10 @@ HEADERS = {
     }
 
 
-def get_soup_from_main_page(
+def get_soup_from_page(
     url: str,
     headers: dict[str, str],
-    html_parser: str
+    html_parser: str = 'html.parser'
         ) -> BeautifulSoup:
     html = requests.get(url, headers=headers)
     return BeautifulSoup(html.content, html_parser)
@@ -75,7 +79,9 @@ def all_stocks_are_listed_on_page(soup: BeautifulSoup) -> bool:
     return int(number_of_all_stocks) == int(number_of_shown_stocks)
 
 
-def parse_soup_for_stocks_list(soup: BeautifulSoup):
+def parse_soup_for_stocks_list(
+    soup: BeautifulSoup
+        ) -> list[dict[str, Union[str, element.Tag]]]:
     if not all_stocks_are_listed_on_page(soup):
         print('Not all stocks are shown!!! :(')
     else:
@@ -86,33 +92,96 @@ def parse_soup_for_stocks_list(soup: BeautifulSoup):
     )
     result_stocks = []
     for stock in stocks_rows:
-        result_stocks.append((
-            stock.find(
+        code_tag: element.Tag = stock.find(
                 'a',
                 class_='Fw(600) C($linkColor)'
-            ).text,
-            stock.find(
+            )
+        result_stocks.append({
+            'code': code_tag.text,
+            'name': stock.find(
                 'td',
                 class_='Va(m) Ta(start) Px(10px) Fz(s)'
             ).text,
-            stock
-        ))
+            'stock_link': code_tag['href'],
+            'stock_tag': stock
+        })
     return result_stocks
 
 
-def parse_for_youngest_ceos(stocks: element.ResultSet):
-    pass
+def parse_for_stocks_profiles(
+    stocks: list[dict[str, Union[str, element.Tag]]]
+        ) -> None:
+    for stock in stocks:
+        try:
+            stock['country'] = 'error'
+            stock['employees'] = 'error'
+            stock['ceo'] = 'error'
+            stock['ceo_year_born'] = 'error'
+            stock_link: str = stock['stock_link']
+            qm_idx = stock_link.find('?')
+            profile_link: str = stock_link[:qm_idx] + \
+                '/profile' + stock_link[qm_idx:]
+            stock_profile_soup: BeautifulSoup = get_soup_from_page(
+                URL+profile_link,
+                HEADERS
+            )
+            stock_details_left_col: element.Tag = stock_profile_soup.find(
+                'p',
+                class_='D(ib) W(47.727%) Pend(40px)'
+            )
+            stock_details_right_col: element.Tag = stock_profile_soup.find(
+                'p',
+                class_='D(ib) Va(t)'
+            )
+            stock_executives_table: element.Tag = stock_profile_soup.find(
+                'table',
+                class_='W(100%)'
+            )
+            left_column_brs = stock_details_left_col.find_all('br')
+            left_column_lines = []
+            for br in left_column_brs:
+                left_column_lines.append(br.previous_sibling.text.strip())
+            left_column_lines.append(
+                left_column_brs[-1].next_sibling.text.strip()
+            )
+            for line in left_column_lines:
+                if line in COUNTRIES:
+                    stock['country'] = line
+            stock['employees'] = ''.join(
+                stock_details_right_col.find_all(
+                    'span',
+                    class_='Fw(600)'
+                )[-1].text.strip()
+            )
+            for executive in stock_executives_table.find_all(
+                'tr',
+                class_='C($primaryColor) BdB Bdc($seperatorColor) H(36px)'
+            ):
+                if 'ceo' in executive.find(
+                    'td',
+                    class_='Ta(start) W(45%)'
+                ).text.lower():
+                    stock['ceo'] = executive.find(
+                        'td',
+                        'Ta(start)'
+                    ).text.strip()
+                    stock['ceo_year_born'] = executive.find_all(
+                        'td',
+                        'Ta(end)'
+                    )[-1].text.strip()
+                    break
+        except AttributeError:
+            continue
 
 
 def main():
-    soup: BeautifulSoup = get_soup_from_main_page(
-        URL,
-        HEADERS,
-        'html.parser'
+    soup: BeautifulSoup = get_soup_from_page(
+        URL+MOST_ACTIVE_100_RESULTS,
+        HEADERS
     )
     stocks: element.ResultSet = parse_soup_for_stocks_list(soup)
-    for stock in stocks:
-        print(stock[0], stock[1])
+    parse_for_stocks_profiles(stocks)
+
 
 
 if __name__ == '__main__':

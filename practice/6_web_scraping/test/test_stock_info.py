@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from pytest import mark
-from stock_info import all_stocks_are_listed_on_page
+from source.stock_info import all_stocks_are_listed_on_page
 
 
 all_stocks_are_listed_on_page_params = [
