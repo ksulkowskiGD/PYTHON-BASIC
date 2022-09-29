@@ -3,13 +3,14 @@ from pytest import mark
 from source.stock_info import all_stocks_are_listed_on_page
 
 
+with open('test/htmls_for_testing.txt', 'r') as fh:
+    not_all_results: str = fh.readline()
+    all_results: str = fh.readline()
+
+
 all_stocks_are_listed_on_page_params = [
-    ('<div class="D(ib) Fz(m) Fw(b) Lh(23px) W(75%)--mobp"><span>Matching <\
-span>Stocks</span></span><span class="Mstart(15px) Fw(500) Fz(s)"><\
-span>1-28 of 28 results</span></span></div>', True),
-    ('<div class="D(ib) Fz(m) Fw(b) Lh(23px) W(75%)--mobp"><span>Matching <\
-span>Stocks</span></span><span class="Mstart(15px) Fw(500) Fz(s)"><\
-span>1-100 of 282 results</span></span></div>', False)
+    (all_results, True),
+    (not_all_results, False)
 ]
 
 

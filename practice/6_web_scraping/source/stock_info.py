@@ -60,19 +60,12 @@ def get_soup_from_page(
 
 
 def all_stocks_are_listed_on_page(soup: BeautifulSoup) -> bool:
-    stocks_header: element.Tag = soup.find(
-        'div',
-        class_='D(ib) Fz(m) Fw(b) Lh(23px) W(75%)--mobp'
-    )
-    try:
-        spans: element.ResultSet = stocks_header.find_all(
-            'span',
-            recursive=False
-        )
-    except AttributeError:
-        sys.exit('Page not working!')
-
-    results_shown_n: str = spans[1].span.text
+    results_shown_n: str = soup.findChild(
+        'span',
+        string='Stocks'
+    ).parent.next_sibling.findChild(
+        'span'
+    ).text
     start_idx: int = results_shown_n.find('of ') + 3
     number_of_all_stocks: str = ''
     number_of_shown_stocks: str = ''
