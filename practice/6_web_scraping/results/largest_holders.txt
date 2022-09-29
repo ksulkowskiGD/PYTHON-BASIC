@@ -1,0 +1,13 @@
+=========================== 10 largest holds of Blackrock Inc. ============================
+| Name                               | Shares     | Date Reported | % Out | Value         |
+-------------------------------------------------------------------------------------------
+| Vanguard Group, Inc. (The)         | 13,047,531 | Jun 29, 2022  | 8.65% | 7,357,763,458 |
+| Blackrock Inc.                     | 9,521,636  | Jun 29, 2022  | 6.32% | 5,369,440,810 |
+| State Street Corporation           | 6,059,542  | Jun 29, 2022  | 4.02% | 3,417,096,821 |
+| Temasek Holdings (Private) Limited | 5,092,825  | Jun 29, 2022  | 3.38% | 2,871,945,786 |
+| Bank of America Corporation        | 4,156,640  | Jun 29, 2022  | 2.76% | 2,344,012,357 |
+| FMR, LLC                           | 3,511,770  | Mar 30, 2022  | 2.33% | 1,980,357,278 |
+| Capital International Investors    | 3,488,119  | Jun 29, 2022  | 2.31% | 1,967,020,006 |
+| JP Morgan Chase & Company          | 3,433,766  | Jun 29, 2022  | 2.28% | 1,936,369,264 |
+| Wellington Management Group, LLP   | 3,095,149  | Jun 29, 2022  | 2.05% | 1,745,416,371 |
+| Morgan Stanley                     | 2,841,371  | Jun 29, 2022  | 1.88% | 1,602,305,885 |

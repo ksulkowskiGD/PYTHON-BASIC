@@ -2,12 +2,12 @@
 | Name                                 | Code | 52-Week Change | Total Cash |
 -----------------------------------------------------------------------------
 | Occidental Petroleum Corporation     | OXY  | 107.61%        | 1.36B      |
-| Devon Energy Corporation             | DVN  | 69.11%         | 3.3B       |
-| Marathon Oil Corporation             | MRO  | 65.84%         | 1.17B      |
-| Exxon Mobil Corporation              | XOM  | 51.07%         | 18.86B     |
-| Crescent Point Energy Corp.          | CPG  | 34.49%         | 15.9M      |
 | PG&E Corporation                     | PCG  | 32.50%         | 239M       |
 | Change Healthcare Inc.               | CHNG | 31.09%         | 113.3M     |
-| Schlumberger Limited                 | SLB  | 19.57%         | 2.82B      |
 | Petróleo Brasileiro S.A. - Petrobras | PBR  | 18.57%         | 100.27B    |
 | Itaú Unibanco Holding S.A.           | ITUB | 17.62%         | 366.77B    |
+| Energy Transfer LP                   | ET   | 15.97%         | 353M       |
+| Southwestern Energy Company          | SWN  | 14.26%         | 50M        |
+| Tesla, Inc.                          | TSLA | 11.34%         | 18.92B     |
+| Apple Inc.                           | AAPL | 5.89%          | 48.23B     |
+| Ambev S.A.                           | ABEV | 5.07%          | 15.66B     |
