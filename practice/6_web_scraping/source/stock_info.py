@@ -33,10 +33,12 @@ Links:
 """
 
 
+import sys
 from typing import Union
 import requests
 from bs4 import BeautifulSoup, element
 from useful_data import COUNTRIES
+
 
 URL = 'https://finance.yahoo.com'
 
@@ -62,7 +64,14 @@ def all_stocks_are_listed_on_page(soup: BeautifulSoup) -> bool:
         'div',
         class_='D(ib) Fz(m) Fw(b) Lh(23px) W(75%)--mobp'
     )
-    spans: element.ResultSet = stocks_header.find_all('span', recursive=False)
+    try:
+        spans: element.ResultSet = stocks_header.find_all(
+            'span',
+            recursive=False
+        )
+    except AttributeError:
+        sys.exit('Page not working!')
+
     results_shown_n: str = spans[1].span.text
     start_idx: int = results_shown_n.find('of ') + 3
     number_of_all_stocks: str = ''
@@ -108,6 +117,46 @@ def parse_soup_for_stocks_list(
     return result_stocks
 
 
+def get_link_to_stock_page(stock_link: str, page: str) -> str:
+    qm_idx: int = stock_link.find('?')
+    return stock_link[:qm_idx] + page + stock_link[qm_idx:]
+
+
+def parse_for_stocks_statistics(
+    stocks: list[dict[str, Union[str, element.Tag]]]
+        ) -> None:
+    for stock in stocks:
+        try:
+            stock['change'] = 'error'
+            stock['total_cash'] = 'error'
+            stats_link: str = get_link_to_stock_page(
+                stock['stock_link'],
+                '/key-statistics'
+            )
+            stock_stats_soup: BeautifulSoup = get_soup_from_page(
+                URL+stats_link,
+                HEADERS
+            )
+            try:
+                stock['change'] = stock_stats_soup.findChild(
+                    'span',
+                    string='52-Week Change'
+                ).parent.next_sibling.text.strip()
+            except AttributeError:
+                stock['change'] = 'error'
+
+            try:
+                stock['total_cash'] = stock_stats_soup.findChild(
+                    'span',
+                    string='Total Cash'
+                ).parent.next_sibling.text.strip()
+            except AttributeError:
+                stock['total_cash'] = 'error'
+
+        except (ValueError, AttributeError):
+            continue
+
+
 def parse_for_stocks_profiles(
     stocks: list[dict[str, Union[str, element.Tag]]]
         ) -> None:
@@ -117,10 +166,10 @@ def parse_for_stocks_profiles(
             stock['employees'] = 'error'
             stock['ceo'] = 'error'
             stock['ceo_year_born'] = 'error'
-            stock_link: str = stock['stock_link']
-            qm_idx = stock_link.find('?')
-            profile_link: str = stock_link[:qm_idx] + \
-                '/profile' + stock_link[qm_idx:]
+            profile_link: str = get_link_to_stock_page(
+                stock['stock_link'],
+                '/profile'
+            )
             stock_profile_soup: BeautifulSoup = get_soup_from_page(
                 URL+profile_link,
                 HEADERS
@@ -195,11 +244,23 @@ def find_youngest_ceos(
     stocks: list[dict[str, Union[str, element.Tag]]]
         ) -> list[dict[str, Union[str, element.Tag]]]:
     stocks_copy = stocks.copy()
-    for stock in stocks_copy:
+    for stock in stocks:
         if 'error' in stock.values():
             stocks_copy.remove(stock)
     stocks_copy.sort(key=lambda x: x['ceo_year_born'], reverse=True)
     return stocks_copy[:5]
+
+
+def find_best_52_week_change_stocks(
+    stocks: list[dict[str, Union[str, element.Tag]]]
+        ) -> list[dict[str, Union[str, element.Tag]]]:
+    stocks_copy = stocks.copy()
+    for stock in stocks:
+        if 'error' in [stock['change'], stock['total_cash']] or\
+                'N/A' in [stock['change'], stock['total_cash']]:
+            stocks_copy.remove(stock)
+    stocks_copy.sort(key=lambda x: float(x['change'][:-1]), reverse=True)
+    return stocks_copy[:10]
 
 
 def save_results_to_file(
@@ -281,6 +342,22 @@ def save_results_to_file(
 
 
 def main():
+    # soup: BeautifulSoup = get_soup_from_page(
+    #     URL+MOST_ACTIVE_100_RESULTS,
+    #     HEADERS
+    # )
+    # stocks: list[dict[str, Union[
+    #     str,
+    #     element.Tag
+    #     ]]] = parse_soup_for_stocks_list(soup)
+    # parse_for_stocks_profiles(stocks)
+    # youngest_ceos_stocks = find_youngest_ceos(stocks)
+    # save_results_to_file(
+    #     youngest_ceos_stocks,
+    #     'results/result1.txt',
+    #     1
+    # )
+
     soup: BeautifulSoup = get_soup_from_page(
         URL+MOST_ACTIVE_100_RESULTS,
         HEADERS
@@ -289,12 +366,11 @@ def main():
         str,
         element.Tag
         ]]] = parse_soup_for_stocks_list(soup)
-    parse_for_stocks_profiles(stocks)
-    youngest_ceos_stocks = find_youngest_ceos(stocks)
+    parse_for_stocks_statistics(stocks)
     save_results_to_file(
-        youngest_ceos_stocks,
-        'results/result1.txt',
-        1
+        find_best_52_week_change_stocks(stocks),
+        'results/best_52_week_change.txt',
+        2
     )
 
 
