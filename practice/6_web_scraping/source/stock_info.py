@@ -144,19 +144,26 @@ def parse_for_stocks_profiles(
             left_column_lines.append(
                 left_column_brs[-1].next_sibling.text.strip()
             )
+
             for line in left_column_lines:
                 if line in COUNTRIES:
                     stock['country'] = line
-            stock['employees'] = ''.join(
-                stock_details_right_col.find_all(
-                    'span',
-                    class_='Fw(600)'
-                )[-1].text.strip()  # TODO: FIX + ERROR IF NOT GIVEN
-            )
-            for executive in stock_executives_table.find_all(
+
+            try:
+                stock['employees'] = ''.join(
+                    stock_details_right_col.find(
+                        'span',
+                        string='Full Time Employees'
+                    ).next_sibling.next_sibling.text.strip()
+                )
+            except AttributeError:
+                stock['employees'] = 'error'
+
+            executives: element.ResultSet = stock_executives_table.find_all(
                 'tr',
                 class_='C($primaryColor) BdB Bdc($seperatorColor) H(36px)'
-            ):  # TODO: IF NO CEO - PICK FIRST ONE
+            )
+            for executive in executives:
                 if 'ceo' in executive.find(
                     'td',
                     class_='Ta(start) W(45%)'
@@ -170,54 +177,107 @@ def parse_for_stocks_profiles(
                             'td',
                             'Ta(end)'
                         )[-1].text.strip())
-                    except ValueError:
+                    except (AttributeError, ValueError):
                         stock['ceo_year_born'] = 'error'
-                    # TODO: FIX PLACEHOLDER
                     break
-        except AttributeError:
+
+            if stock['ceo'] == 'error':
+                stock['ceo'] = executives[0].find(
+                        'td',
+                        'Ta(start)'
+                    ).text.strip()
+
+        except (AttributeError, ValueError):
             continue
-    for stock in stocks:  # TODO: MOVE IT TO SORTING
-        if 'error' in stocks.values():
-            stocks.remove(stock)
 
 
 def find_youngest_ceos(
     stocks: list[dict[str, Union[str, element.Tag]]]
         ) -> list[dict[str, Union[str, element.Tag]]]:
-    stocks.sort(key=lambda x: x['ceo_year_born'], reverse=True)
-    return stocks[:5]
+    stocks_copy = stocks.copy()
+    for stock in stocks_copy:
+        if 'error' in stock.values():
+            stocks_copy.remove(stock)
+    stocks_copy.sort(key=lambda x: x['ceo_year_born'], reverse=True)
+    return stocks_copy[:5]
 
 
-def save_youngest_ceos(stocks: list[dict[str, Union[str, element.Tag]]]):
-    table_width: int = 19
+def save_results_to_file(
+    stocks: list[dict[str, Union[str, element.Tag]]],
+    file_name: str,
+    task_number: int
+        ):
+    table_title: str = ''
+    table_width: int
     cols_width: dict[str, int] = {}
-    for value, column_title in [
-        ('code', 4),
-        ('name', 4),
-        ('country', 7),
-        ('employees', 9),
-        ('ceo', 8),
-        ('ceo_year_born', 13)
-    ]:
-        cols_width[value] = max([
-            len(str(stock[value])) for stock in stocks
-        ] + [column_title])
-        table_width += cols_width[value]
-    table_title: str = ' 5 stocks with most youngest CEOs '
-    with open('./results/youngest_ceos.txt', 'w') as fh:
+    columns: list[tuple[str, str, int]]
+    match task_number:
+        case 1:
+            columns = [
+                ('Name', 'name', 4),
+                ('Code', 'code', 4),
+                ('Country', 'country', 7),
+                ('Employees', 'employees', 9),
+                ('CEO Name', 'ceo', 8),
+                ('CEO Year Born', 'ceo_year_born', 13)
+            ]
+            table_title = ' 5 stocks with most youngest CEOs '
+            table_width = 19
+            for _, key, column_title in columns:
+                cols_width[key] = max([
+                    len(str(stock[key])) for stock in stocks
+                ] + [column_title])
+                table_width += cols_width[key]
+        case 2:
+            columns = [
+                ('Name', 'name', 4),
+                ('Code', 'code', 4),
+                ('52-Week Change', 'change', 14),
+                ('Total Cash', 'total_cash', 10)
+            ]
+            table_title = ' 10 stocks with best 52-Week Change '
+            table_width = 13
+            for _, key, column_title in columns:
+                cols_width[key] = max([
+                    len(str(stock[key])) for stock in stocks
+                ] + [column_title])
+                table_width += cols_width[key]
+        case 3:
+            columns = [
+                ('Name,' 'name', 4),
+                ('Code', 'code', 4),
+                ('Shares', 'shares', 6),
+                ('Date Reported', 'date_reported', 13),
+                ('% Out', 'p_out', 5),
+                ('Value', 'value', 5)
+            ]
+            table_title = ' 10 largest holds of Blackrock Inc. '
+            table_width = 19
+            for _, key, column_title in columns:
+                cols_width[key] = max([
+                    len(str(stock[key])) for stock in stocks
+                ] + [column_title])
+                table_width += cols_width[key]
+        case _:
+            raise Exception('Wrong task_number')
+    with open(file_name, 'w') as fh:
         fh.write(f'{table_title:=^{table_width}}\n')
-        fh.write(f'| {"Name":<{cols_width["name"]}} | \
-{"Code":<{cols_width["code"]}} | {"Country":<{cols_width["country"]}} | \
-{"Employees":<{cols_width["employees"]}} | {"CEO Name":<{cols_width["ceo"]}} \
-| {"CEO Year Born":<{cols_width["ceo_year_born"]}} |\n')
+        values: str = ' | '.join([
+            f'{string:<{cols_width[key]}}' for string, key, _ in columns
+        ])
+        values = '| ' + values + ' |\n'
+        fh.write(values)
         fh.write('-'*table_width + '\n')
         for stock in stocks:
-            fh.write(f'| {stock["name"]:<{cols_width["name"]}} | \
-{stock["code"]:<{cols_width["code"]}} | \
-{stock["country"]:<{cols_width["country"]}} | \
-{stock["employees"]:<{cols_width["employees"]}} | \
-{stock["ceo"]:<{cols_width["ceo"]}} | \
-{stock["ceo_year_born"]:<{cols_width["ceo_year_born"]}} |\n')
+            stock_row: str = ' | '.join([
+                f'{stock[key]:<{cols_width[key]}}' for
+                _,
+                key,
+                _
+                in columns
+            ])
+            stock_row = '| ' + stock_row + ' |\n'
+            fh.write(stock_row)
 
 
 def main():
@@ -231,7 +291,11 @@ def main():
         ]]] = parse_soup_for_stocks_list(soup)
     parse_for_stocks_profiles(stocks)
     youngest_ceos_stocks = find_youngest_ceos(stocks)
-    save_youngest_ceos(youngest_ceos_stocks)
+    save_results_to_file(
+        youngest_ceos_stocks,
+        'results/result1.txt',
+        1
+    )
 
 
 if __name__ == '__main__':
